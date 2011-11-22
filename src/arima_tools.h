@@ -11,39 +11,102 @@
 
 #include <vector>
 
-typedef struct ARIMAModel_ {
+/**
+ * ARIMA(p,d,q) model structure.
+ * Defines the parameters (p,d,q) of an ARIMA model (already estimated).
+ */
+typedef struct {
+	/** AR (autoregressive) part parameters */
 	std::vector<double> ar_params;
+
+	/** MA (moving average) part parameters */
 	std::vector<double> ma_params;
+
+	/** Integrated part */
 	unsigned int d;
+
+	/** Intercept (constant) */
 	double intercept;
+
+	/** Error obtained in the training part */
 	double sigma_2;
 } ARIMAModel;
 
-typedef struct Predictions_ {
+/**
+ * Vector of forecasted values.
+ * Contains a vector for the forecast values and another vector for error values.
+ */
+typedef struct {
+	/** Forecasted values */
 	std::vector<double> values;
+
+	/** Error values */
 	std::vector<double> error;
 } Predictions;
 
-typedef struct DiffSeries_ {
+/**
+ * Forecast 'n' values using a predefined ARIMA model.
+ * @param model An ARIMAModel structure.
+ * @param n Number of forecasts ahead in time.
+ * @param obs Observations already seen.
+ * @param pred Structure where forecasts will be saved in.
+ */
+//void ARIMA_predict(const ARIMAModel &model, unsigned int n,
+		//const std::vector<double> &obs, Predictions &pred);
+
+
+/**
+ * Forecast observations using a predefined ARIMA model.
+ */
+class ARIMAForecaster {
+public:
+	/**
+	 * Forecast 'n' values.
+	 * @param model An ARIMAModel structure.
+	 * @param n Number of forecasts ahead in time.
+	 * @param obs Observations already seen.
+	 * @return Predictions structure with forecasts and errors.
+	 */
+	static Predictions forecast(const ARIMAModel &model, unsigned int n,
+			const std::vector<double> &obs);
+};
+
+/**
+ * Vector with differentiated series.
+ */
+typedef struct {
+	/** Matrix of values */
 	std::vector< std::vector<double> > win;
 } DiffSeries;
 
-/*
- * Difference and Undo-difference a series
+/**
+ * Differentiate and undo-difference a series.
  */
 class Series {
 	DiffSeries dseries;
 	unsigned int diff_d;
 public:
-	void diff(const std::vector<double> &old_series, std::vector<double> &new_series, unsigned int d);
-	void undo_diff(std::vector<double> trans_predict, std::vector<double> &real_predict);
-	void print(void);
-};
+	/**
+	 * Differentiate a series.
+	 * @param old_series Original series.
+	 * @param new_series New (differentiated) series.
+	 * @param d Degree.
+	 */
+	void diff(const std::vector<double> &old_series,
+			std::vector<double> &new_series, unsigned int d);
 
-/*
- * Predicts 'n' values using an ARIMA model
- */
-void ARIMA_predict(const ARIMAModel &model, unsigned int n,
-		const std::vector<double> &obs, Predictions &pred);
+	/**
+	 * Undo-difference a series.
+	 * @param trans_predict Converted series.
+	 * @param real_predict Original series.
+	 */
+	void undo_diff(std::vector<double> trans_predict,
+			std::vector<double> &real_predict);
+
+	/**
+	 * Print series.
+	 */
+	void print();
+};
 
 #endif /* ARIMA_TOOLS_H_ */
